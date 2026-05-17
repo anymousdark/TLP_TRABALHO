@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-ao">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documentacao - Lakastech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+:root, .light-theme {
+    --primary: #0071e3;
+    --primary-dark: #0060c9;
+    --bg: #f5f5f7;
+    --card: rgba(255,255,255,0.85);
+    --text: #1d1d1f;
+    --text-light: #86868b;
+    --border: rgba(0,0,0,0.08);
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.06);
+    --glass: blur(20px) saturate(180%);
+    --accent: #f5a623;
+    --success: #34c759;
+    --danger: #ff3b30;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+}
+body.dark-theme {
+    --bg: #1c1c1e;
+    --card: rgba(44,44,46,0.72);
+    --text: #f5f5f7;
+    --text-light: #98989d;
+    --border: rgba(255,255,255,0.06);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+body.dark-theme {
+    background: radial-gradient(1000px circle at 15% 10%, rgba(0,113,227,0.06), transparent 40%),
+                radial-gradient(800px circle at 85% 15%, rgba(245,166,35,0.04), transparent 40%),
+                radial-gradient(900px circle at 50% 90%, rgba(52,199,89,0.03), transparent 45%),
+                #1c1c1e;
+}
+body.dark-theme nav {
+    background: rgba(44,44,46,0.78);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+body.dark-theme .hero { background: linear-gradient(135deg, #0058b0, #6a3fc4); }
+body.dark-theme .section {
+    background: rgba(44,44,46,0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-color: rgba(255,255,255,0.06);
+}
+body.dark-theme pre { background: #0d0d0f; border: 1px solid rgba(255,255,255,0.06); }
+body.dark-theme .file-card { border-color: rgba(255,255,255,0.06); }
+body.dark-theme .file-card:hover { background: rgba(0,113,227,0.08); border-color: var(--primary); }
+body.dark-theme table th { color: var(--text-light); }
+body.dark-theme table td { border-color: rgba(255,255,255,0.04); }
+body.dark-theme .footer { border-color: rgba(255,255,255,0.06); }
+body.dark-theme code { background: rgba(255,255,255,0.06); }
+.theme-toggle-doc {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-light);
+    font-size: 1rem;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+.theme-toggle-doc:hover { border-color: var(--primary); color: var(--primary); background: rgba(0,113,227,0.06); }
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    background: rgba(255,255,255,0.8);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+nav .logo { font-weight: 700; font-size: 1.2rem; color: var(--primary); }
+nav a { color: var(--text-light); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.15s; }
+nav a:hover { color: var(--primary); }
+.container { max-width: 960px; margin: 0 auto; padding: 2rem; }
+.hero {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    color: white;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+}
+.hero h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.hero p { opacity: 0.9; font-size: 1rem; }
+.section {
+    background: var(--card);
+    backdrop-filter: var(--glass);
+    -webkit-backdrop-filter: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+}
+.section h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.section h2 .badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(0,113,227,0.1);
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.5rem;
+    color: var(--text);
+}
+.section h3:first-child { margin-top: 0; }
+.section p, .section li { font-size: 0.9rem; color: #444; }
+.section ul { padding-left: 1.25rem; }
+.section ul li { margin-bottom: 0.35rem; }
+.file-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+.file-card {
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: all 0.15s;
+    cursor: default;
+}
+.file-card:hover { border-color: var(--primary); background: rgba(0,113,227,0.03); }
+.file-card .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.file-card .icon.php { background: rgba(119,187,180,0.15); color: #777BB4; }
+.file-card .icon.css { background: rgba(21,114,182,0.15); color: #1572B6; }
+.file-card .icon.sql { background: rgba(68,121,161,0.15); color: #4479A1; }
+.file-card .info { flex: 1; min-width: 0; }
+.file-card .info .nome { font-weight: 600; font-size: 0.95rem; display: block; }
+.file-card .info .desc { font-size: 0.82rem; color: var(--text-light); display: block; margin-top: 0.15rem; }
+.tag {
+    display: inline-block;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 999px;
+    margin-right: 0.25rem;
+}
+.tag.php { background: rgba(119,187,180,0.12); color: #5a6e6a; }
+.tag.css { background: rgba(21,114,182,0.12); color: #1572B6; }
+.tag.sql { background: rgba(68,121,161,0.12); color: #4479A1; }
+.tag.js { background: rgba(247,223,30,0.2); color: #b0a000; }
+.flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 1rem 0;
+}
+.flow-step {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    min-width: 80px;
+}
+.flow-step.page { background: rgba(0,113,227,0.1); color: var(--primary); border: 1px solid rgba(0,113,227,0.15); }
+.flow-step.action { background: rgba(52,199,89,0.1); color: #1a7a3a; border: 1px solid rgba(52,199,89,0.15); }
+.flow-step.check { background: rgba(245,166,35,0.1); color: #b87c00; border: 1px solid rgba(245,166,35,0.15); }
+.flow-arrow { color: var(--text-light); font-size: 1.1rem; }
+code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: rgba(0,0,0,0.04);
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    color: var(--primary-dark);
+}
+pre {
+    background: #1d1d1f;
+    color: #f5f5f7;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    line-height: 1.5;
+    margin: 0.75rem 0;
+}
+pre .c { color: #6a9955; } /* comment */
+pre .k { color: #569cd6; } /* keyword */
+pre .s { color: #ce9178; } /* string */
+pre .v { color: #9cdcfe; } /* variable */
+pre .f { color: #dcdcaa; } /* function */
+pre .n { color: #4ec9b0; } /* number */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.75rem 0;
+}
+table th, table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+table th { font-weight: 600; color: var(--text-light); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+table tr:hover td { background: rgba(0,0,0,0.015); }
+.footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+}
+@media (max-width: 600px) {
+    .container { padding: 1rem; }
+    .hero h1 { font-size: 1.5rem; }
+    .file-card { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+    <span class="logo">Lakastech</span>
+    <a href="#visao">Visao Geral</a>
+    <a href="#arquivos">Arquivos</a>
+    <a href="#banco">Banco</a>
+    <a href="#fluxo">Fluxos</a>
+    <a href="#design">Design</a>
+    <button class="theme-toggle-doc" id="theme-toggle-doc" title="Alternar Tema" aria-label="Alternar tema claro/escuro">
+        <i class="fas fa-moon"></i>
+    </button>
+</nav>
+
+<div class="container">
+
+    <div class="hero">
+        <h1>Documentacao do Codigo</h1>
+        <p>Estrutura completa do projecto Lakastech — Loja Virtual Angolana</p>
+    </div>
+
+    <!-- VISAO GERAL -->
+    <div class="section" id="visao">
+        <h2>Visao Geral</h2>
+        <p>
+            O <strong>Lakastech</strong> e um sistema de loja virtual desenvolvido em PHP puro com MySQL.
+            O projecto segue uma arquitectura monolítica simples: cada pagina PHP renderiza HTML no servidor
+            com CSS glassmorphism (macOS style) e JavaScript para interaccao (tema dark, animacoes, preview de imagens).
+        </p>
+        <div style="margin-top:1rem;">
+            <span class="tag php">PHP 8.x</span>
+            <span class="tag sql">MySQL 8.x</span>
+            <span class="tag css">CSS3 Glassmorphism</span>
+            <span class="tag js">JavaScript Vanilla</span>
+            <span class="tag" style="background:rgba(255,149,0,0.12);color:#c17e00;">XAMPP</span>
+            <span class="tag" style="background:rgba(175,82,222,0.12);color:#8b1ec7;">VS Code</span>
+        </div>
+
+        <h3>Principais Caracteristicas</h3>
+        <ul>
+            <li>CRUD de produtos com upload de imagem e estoque inline</li>
+            <li>Checkout em 3 etapas com transacao segura (begin_transaction / rollback)</li>
+            <li>Metodos de pagamento angolanos: Multicaixa Express, BFA Net, BAI Directo</li>
+            <li>Perfil de utilizador com abas e gestao de dados de pagamento pessoais</li>
+            <li>Painel admin completo: produtos, pedidos, utilizadores, metodos de pagamento</li>
+            <li>Seis animais africanos animados em SVG com CSS keyframes</li>
+            <li>Tema dark/light persistente com localStorage</li>
+            <li>Design responsivo com glass effect (backdrop-filter: blur + saturate)</li>
+        </ul>
+    </div>
+
+    <!-- TECNOLOGIAS -->
+    <div class="section" id="tecnologias">
+        <h2>Tecnologias Utilizadas <span class="badge">Stack</span></h2>
+        <p style="margin-bottom:1.5rem;">Aplicaes e ferramentas usadas no desenvolvimento e execucao do projecto:</p>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:1rem;">
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:linear-gradient(135deg,#777BB4,#5a5f8a); color:white; box-shadow:0 4px 12px rgba(119,187,180,0.3);">PHP</div>
+                <div style="font-weight:600; font-size:0.85rem;">PHP 8.x</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Linguagem backend</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:linear-gradient(135deg,#4479A1,#2d5a7a); color:white; box-shadow:0 4px 12px rgba(68,121,161,0.3);">SQL</div>
+                <div style="font-weight:600; font-size:0.85rem;">MySQL 8.x</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Banco de dados</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; background:linear-gradient(135deg,#1572B6,#0d4f7a); color:white; box-shadow:0 4px 12px rgba(21,114,182,0.3);">CSS</div>
+                <div style="font-weight:600; font-size:0.85rem;">CSS3</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Estilo glass + animacoes</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.8rem; background:linear-gradient(135deg,#F7DF1E,#b0a000); color:#333; box-shadow:0 4px 12px rgba(247,223,30,0.3);">JS</div>
+                <div style="font-weight:600; font-size:0.85rem;">JavaScript</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Interacoes no cliente</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.2rem; background:linear-gradient(135deg,#FB7A24,#d45d00); color:white; box-shadow:0 4px 12px rgba(251,122,36,0.3);">XAMP</div>
+                <div style="font-weight:600; font-size:0.85rem;">XAMPP</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Servidor local Apache + MySQL</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; background:linear-gradient(135deg,#007ACC,#005a9e); color:white; box-shadow:0 4px 12px rgba(0,122,204,0.3);">VS</div>
+                <div style="font-weight:600; font-size:0.85rem;">VS Code</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Editor de codigo</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; background:linear-gradient(135deg,#F05032,#c93a1f); color:white; box-shadow:0 4px 12px rgba(240,80,50,0.3);">Git</div>
+                <div style="font-weight:600; font-size:0.85rem;">Git / GitHub</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Controlo de versao</div>
+            </div>
+            <div style="text-align:center; padding:1.25rem 0.75rem; background:var(--bg); border-radius:14px; border:1px solid var(--border);">
+                <div style="width:56px; height:56px; border-radius:14px; margin:0 auto 0.5rem; display:flex; align-items:center; justify-content:center; font-size:1.2rem; background:linear-gradient(135deg,#E34F26,#b33b1a); color:white; box-shadow:0 4px 12px rgba(227,79,38,0.3);">HTML</div>
+                <div style="font-weight:600; font-size:0.85rem;">HTML5</div>
+                <div style="font-size:0.7rem; color:var(--text-light);">Estrutura das paginas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ARQUIVOS -->
+    <div class="section" id="arquivos">
+        <h2>Arquivos do Projecto</h2>
+        <p style="margin-bottom:1rem;">Cada ficheiro e sua responsabilidade no sistema:</p>
+
+        <div class="file-grid">
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">config.php</span>
+                    <span class="desc">Conexao MySQL + inicio de sessao. Incluido por todas as paginas.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">header.php</span>
+                    <span class="desc">Navbar principal com logo, links, admin dropdown, theme toggle. Inicia output buffering (ob_start).</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">footer.php</span>
+                    <span class="desc">Fecha output buffering (ob_end_flush), theme toggle JS, rodape.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">index.php</span>
+                    <span class="desc">Catalogo de produtos com grid responsivo, botoes "Adicionar ao Carrinho", categorias.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">carrinho.php</span>
+                    <span class="desc">Carrinho de compras: lista itens, actualiza quantidade, remove, calcula total.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">finalizar.php</span>
+                    <span class="desc">Checkout em 3 etapas: (1) escolher pagamento + endereco, (2) revisar, (3) confirmar com transacao.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">login.php</span>
+                    <span class="desc">Login com split layout: formulario a esquerda, mascote animado (leao) com icones flutuantes a direita.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">cadastro.php</span>
+                    <span class="desc">Registo de novo utilizador com split layout (mascote verde com estrela ✦).</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">perfil.php</span>
+                    <span class="desc">Perfil do utilizador com abas: Dados Pessoais (editar nome/email, alterar senha) e Pagamento (gerir contas pessoais).</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">pedidos.php</span>
+                    <span class="desc">Historico de pedidos do utilizador em formato card (pagamento, entrega, itens, total).</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">admin.php</span>
+                    <span class="desc">Painel de produtos: formulario lateral, lista em cards com estoque inline, busca, ordenacao, categorias.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">admin_pedidos.php</span>
+                    <span class="desc">Gestao de pedidos: cards com dados do cliente, pagamento, entrega, itens, status editavel, busca e filtro.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">admin_usuarios.php</span>
+                    <span class="desc">Gestao de utilizadores: tabela, modal de edicao, reset senha, estatisticas de pedidos.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">admin_pagamento.php</span>
+                    <span class="desc">Gestao de metodos de pagamento da loja: adicionar, editar, eliminar, activar/desactivar contas bancarias.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon css">C</div>
+                <div class="info">
+                    <span class="nome">style.css</span>
+                    <span class="desc">Folha de estilos principal: glassmorphism, variaveis CSS, animacoes dos animais, auth layout, dark theme, responsivo.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">animais.php</span>
+                    <span class="desc">Seis funcoes PHP que retornam SVGs de animais africanos (elefante, leao, girafa, zebra, macaco, rinoceronte) com animacoes CSS.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon sql">S</div>
+                <div class="info">
+                    <span class="nome">database.sql</span>
+                    <span class="desc">Schema completo do banco com todas as tabelas, chaves estrangeiras e dados iniciais.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">setup_db.php</span>
+                    <span class="desc">Script para criar o banco e tabelas automaticamente.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">logout.php</span>
+                    <span class="desc">Destroi a sessao e redireciona para o login.</span>
+                </div>
+            </div>
+
+            <div class="file-card">
+                <div class="icon php">P</div>
+                <div class="info">
+                    <span class="nome">security.php</span>
+                    <span class="desc">Funcoes de seguranca: validacao de upload (tamanho, MIME type) e proteccao CSRF.</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- BANCO DE DADOS -->
+    <div class="section" id="banco">
+        <h2>Banco de Dados</h2>
+        <p>O sistema usa 5 tabelas no MySQL:</p>
+
+        <table>
+            <tr><th>Tabela</th><th>Colunas</th><th>Descricao</th></tr>
+            <tr>
+                <td><code>usuarios</code></td>
+                <td>id, nome, email, senha, tipo, criado_em, pagamento_info</td>
+                <td>Utilizadores (cliente/admin) com dados de pagamento pessoais em JSON</td>
+            </tr>
+            <tr>
+                <td><code>produtos</code></td>
+                <td>id, nome, descricao, preco, estoque, categoria, imagem, criado_em</td>
+                <td>Produtos da loja com categoria e imagem local</td>
+            </tr>
+            <tr>
+                <td><code>pedidos</code></td>
+                <td>id, usuario_id, total, endereco, telefone, metodo_pagamento, status, data_pedido</td>
+                <td>Pedidos com endereco de entrega e metodo de pagamento escolhido</td>
+            </tr>
+            <tr>
+                <td><code>itens_pedido</code></td>
+                <td>id, pedido_id, produto_id, quantidade, preco_unitario</td>
+                <td>Itens de cada pedido (FK para pedidos ON DELETE CASCADE)</td>
+            </tr>
+            <tr>
+                <td><code>metodos_pagamento</code></td>
+                <td>id, nome, descricao, conta, titular, ativo, criado_em</td>
+                <td>Metodos de pagamento da loja (gerivel pelo admin)</td>
+            </tr>
+        </table>
+
+        <h3>Relacionamentos</h3>
+        <pre><span class="c">-- usuarios 1---N pedidos</span>
+<span class="k">FOREIGN KEY</span> (usuario_id) <span class="k">REFERENCES</span> usuarios(id)
+
+<span class="c">-- pedidos 1---N itens_pedido</span>
+<span class="k">FOREIGN KEY</span> (pedido_id) <span class="k">REFERENCES</span> pedidos(id) <span class="k">ON DELETE CASCADE</span>
+
+<span class="c">-- itens_pedido N---1 produtos</span>
+<span class="k">FOREIGN KEY</span> (produto_id) <span class="k">REFERENCES</span> produtos(id)</pre>
+
+        <h3>Coluna <code>pagamento_info</code></h3>
+        <p>Armazena os dados de pagamento do utilizador como JSON:</p>
+        <pre>{
+  <span class="s">"multicaixa"</span>: <span class="s">"923 456 789"</span>,
+  <span class="s">"bfa"</span>: <span class="s">"1234-567890-01"</span>,
+  <span class="s">"bai"</span>: <span class="s">"9876-543210-01"</span>,
+  <span class="s">"preferencia"</span>: <span class="s">"multicaixa"</span>
+}</pre>
+    </div>
+
+    <!-- FLUXOS -->
+    <div class="section" id="fluxo">
+        <h2>Fluxos do Sistema</h2>
+
+        <h3>Checkout (3 etapas)</h3>
+        <div class="flow">
+            <span class="flow-step page">Carrinho</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step page">Dados</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step page">Revisar</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step page">Confirmado</span>
+        </div>
+        <ol style="margin-top: 0.5rem;">
+            <li><strong>Carrinho</strong> — Utilizador ve os itens e clica "Finalizar Compra"</li>
+            <li><strong>Dados</strong> — Escolhe o metodo de pagamento e preenche endereco (rua, bairro, municipio, telefone)</li>
+            <li><strong>Revisar</strong> — Confere todos os dados antes de confirmar</li>
+            <li><strong>Confirmado</strong> — Transacao com <code>begin_transaction()</code>: cria pedido, insere itens, reduz estoque. Exibe dados bancarios para transferencia.</li>
+        </ol>
+
+        <h3>Admin — Gestao de Produtos</h3>
+        <div class="flow">
+            <span class="flow-step page">Formulario</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step action">Salvar</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step page">Lista</span>
+        </div>
+        <p>O admin preenche o formulario no sidebar, faz upload de imagem (com preview), define categoria (com autocomplete).<br>
+        A lista de produtos permite edicao inline do estoque, ordenacao por coluna, e busca por nome/descricao.</p>
+
+        <h3>Admin — Gestao de Pedidos</h3>
+        <div class="flow">
+            <span class="flow-step check">Filtro</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step page">Cards</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step action">Status</span>
+        </div>
+        <p>Stats clicaveis filtram por status (todos, pendentes, pagos, cancelados).<br>
+        Cada pedido e um card com dados do cliente, pagamento, endereco, itens e formulario para alterar o status.</p>
+
+        <h3>Output Buffering</h3>
+        <p>
+            Para evitar erros "headers already sent", o sistema usa output buffering:
+        </p>
+        <ul>
+            <li><code>header.php</code> chama <code>ob_start()</code> no inicio</li>
+            <li><code>footer.php</code> chama <code>ob_end_flush()</code> no fim</li>
+            <li>Isto permite chamar <code>header()</code> / <code>setcookie()</code> apos incluir <code>header.php</code></li>
+        </ul>
+    </div>
+
+    <!-- DESIGN -->
+    <div class="section" id="design">
+        <h2>Design e Animacoes</h2>
+
+        <h3>Glassmorphism macOS</h3>
+        <p>O estilo usa as propriedades CSS:</p>
+        <pre><span class="k">backdrop-filter</span>: blur(20px) saturate(180%);
+<span class="k">-webkit-backdrop-filter</span>: blur(20px) saturate(180%);
+<span class="k">border-radius</span>: 16px;
+<span class="k">border</span>: 1px solid rgba(255,255,255,0.15);</pre>
+        <p>Aplicado a cards, navbar, containers e elementos .glass.</p>
+
+        <h3>Variaveis CSS</h3>
+        <pre>:root {
+  <span class="v">--primary</span>: <span class="n">#0071e3</span>;    <span class="c">/* Azul Apple */</span>
+  <span class="v">--success</span>: <span class="n">#34c759</span>;    <span class="c">/* Verde */</span>
+  <span class="v">--danger</span>: <span class="n">#ff3b30</span>;     <span class="c">/* Vermelho */</span>
+  <span class="v">--bg</span>: <span class="n">#f5f5f7</span>;         <span class="c">/* Fundo claro */</span>
+  <span class="v">--card</span>: rgba(255,255,255,0.8);
+  <span class="v">--text</span>: <span class="n">#1d1d1f</span>;
+  <span class="v">--radius-md</span>: <span class="n">12px</span>;
+  <span class="v">--radius-lg</span>: <span class="n">16px</span>;
+  <span class="v">--glass-blur</span>: <span class="n">20px</span>;
+}</pre>
+
+        <h3>Dark Theme</h3>
+        <p>O tema escuro e activado via classe <code>.dark-theme</code> no <code>body</code>:</p>
+        <pre><span class="k">.dark-theme</span> {
+  <span class="v">--bg</span>: <span class="n">#1c1c1e</span>;
+  <span class="v">--card</span>: rgba(44,44,46,0.8);
+  <span class="v">--text</span>: <span class="n">#f5f5f7</span>;
+}</pre>
+
+        <h3>Theme Toggle — Modo Claro / Escuro</h3>
+        <p>Botao <code>&#9790;</code> no canto direito da navbar que alterna entre tema claro (light glass) e escuro (dark glass).</p>
+
+        <h4>Funcionamento</h4>
+        <ol>
+            <li><strong>CSS:</strong> O tema escuro e definido pela classe <code>.dark-theme</code> no <code>body</code>, que sobrepoe as variaveis CSS <code>--bg</code>, <code>--card</code>, <code>--text</code>, <code>--border</code> para tons escuros.</li>
+            <li><strong>JavaScript:</strong> O botao no <code>footer.php</code> escuta <code>click</code>, alterna a classe no <code>body</code> e salva a preferencia em <code>localStorage</code> com chave <code>theme</code>.</li>
+            <li><strong>Persistencia:</strong> Um script inline no <code>header.php</code> le <code>localStorage.getItem('theme')</code> antes do HTML renderizar e aplica a classe imediatamente, evitando flash de tema incorrecto.</li>
+            <li><strong>Icone:</strong> O botao mostra <code>fa-moon</code> (lua) no tema claro e <code>fa-sun</code> (sol) no tema escuro, alternando via JS.</li>
+        </ol>
+
+        <h4>Estrutura do JS (footer.php)</h4>
+        <pre>document.getElementById('theme-toggle').addEventListener('click', function() {
+    document.body.classList.toggle('dark-theme');
+    const theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+    this.querySelector('i').className = theme === 'dark'
+        ? 'fas fa-sun'
+        : 'fas fa-moon';
+});
+
+<span class="c">// Aplicar tema salvo antes do render (header.php)</span>
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+}</pre>
+
+        <h3>Animais Africanos</h3>
+        <p>Seis animais implementados como funcoes PHP em <code>animais.php</code>:</p>
+        <table>
+            <tr><th>Funcao</th><th>Animal</th><th>Animacao CSS</th><th>Paginas</th></tr>
+            <tr><td><code>animal_elefante()</code></td><td>Elefante</td><td>tromba e orelhas (rotate)</td><td>Catalogo, Admin Pagamentos</td></tr>
+            <tr><td><code>animal_leao()</code></td><td>Leao</td><td>juba (scale + rotate)</td><td>Pedidos, Admin Produtos</td></tr>
+            <tr><td><code>animal_girafa()</code></td><td>Girafa</td><td>pescoco (translateY)</td><td>Carrinho, Perfil</td></tr>
+            <tr><td><code>animal_zebra()</code></td><td>Zebra</td><td>galope (translateX)</td><td>Carrinho, Pedidos</td></tr>
+            <tr><td><code>animal_macaco()</code></td><td>Macaco</td><td>bracos (rotate)</td><td>Catalogo, Admin Users</td></tr>
+            <tr><td><code>animal_rinoceronte()</code></td><td>Rinoceronte</td><td>corpo (scale)</td><td>Admin Produtos</td></tr>
+        </table>
+        <p style="margin-top:0.5rem;">
+            Os animais sao exibidos nos cantos das paginas usando <code>position: fixed</code> com classes <code>.animal-corner-tr</code>, <code>.animal-corner-bl</code>, <code>.animal-corner-br</code>.
+        </p>
+    </div>
+
+    <!-- DECISOES TECNICAS -->
+    <div class="section">
+        <h2>Decisoes Tecnicas</h2>
+        <ul>
+            <li><strong>Pagamento info como JSON</strong> — O campo <code>pagamento_info</code> em <code>usuarios</code> e JSON para simplicidade, sem tabela extra.</li>
+            <li><strong>Output buffering</strong> — <code>ob_start()</code> em header.php permite redirects apos incluir o header.</li>
+            <li><strong>FK constraint em itens_pedido</strong> — Ao eliminar um produto, primeiro apaga os registos em <code>itens_pedido</code> para evitar violacao de FK.</li>
+            <li><strong>Checkout transacional</strong> — <code>begin_transaction()</code> + <code>commit()</code> / <code>rollback()</code> garante integridade dos pedidos.</li>
+            <li><strong>Metodos de pagamento via DB</strong> — As contas bancarias da loja sao geriveis pelo admin em <code>admin_pagamento.php</code>, eliminando codigo hardcoded.</li>
+            <li><strong>FOR UPDATE</strong> — No checkout, usa <code>SELECT ... FOR UPDATE</code> para travar o registo do produto e evitar condicoes de corrida no estoque.</li>
+        </ul>
+    </div>
+
+</div>
+
+<div class="footer">
+    Lakastech &mdash; Documentacao do codigo &mdash; <a href="index.php" style="color:var(--primary);text-decoration:none;">Ir para a Loja</a>
+</div>
+
+<script>
+(function() {
+    var btn = document.getElementById('theme-toggle-doc');
+    if (!btn) return;
+    var icon = btn.querySelector('i');
+    if (localStorage.getItem('theme-doc') === 'dark') {
+        document.body.classList.add('dark-theme');
+        if (icon) { icon.className = 'fas fa-sun'; }
+    }
+    btn.addEventListener('click', function() {
+        document.body.classList.toggle('dark-theme');
+        var isDark = document.body.classList.contains('dark-theme');
+        localStorage.setItem('theme-doc', isDark ? 'dark' : 'light');
+        if (icon) { icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon'; }
+    });
+})();
+</script>
+</body>
+</html>

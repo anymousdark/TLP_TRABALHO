@@ -1,6 +1,9 @@
 <?php 
 require_once 'header.php'; 
 
+$animais = '<div class="animal-corner animal-corner-bl">' . animal_girafa(65) . '</div>';
+$animais .= '<div class="animal-corner animal-corner-tr">' . animal_zebra(65) . '</div>';
+
 // Remover item
 if (isset($_GET['remove'])) {
     $id = intval($_GET['remove']);
@@ -69,11 +72,11 @@ if (isset($_SESSION['carrinho']) && !empty($_SESSION['carrinho'])) {
                         <td>
                             <strong><?php echo $item['nome']; ?></strong>
                         </td>
-                        <td>R$ <?php echo number_format($item['preco'], 2, ',', '.'); ?></td>
+                        <td>Kz <?php echo number_format($item['preco'], 2, ',', '.'); ?></td>
                         <td>
                             <input type="number" name="qtd[<?php echo $item['id']; ?>]" value="<?php echo $item['quantidade']; ?>" min="1" max="<?php echo $item['estoque']; ?>" style="width: 70px;">
                         </td>
-                        <td>R$ <?php echo number_format($item['subtotal'], 2, ',', '.'); ?></td>
+                        <td>Kz <?php echo number_format($item['subtotal'], 2, ',', '.'); ?></td>
                         <td>
                             <a href="?remove=<?php echo $item['id']; ?>" class="btn btn-danger" style="padding: 0.25rem 0.5rem;">Remover</a>
                         </td>
@@ -83,7 +86,7 @@ if (isset($_SESSION['carrinho']) && !empty($_SESSION['carrinho'])) {
             </table>
 
             <div class="total-section">
-                Total: R$ <?php echo number_format($total, 2, ',', '.'); ?>
+                Total: Kz <?php echo number_format($total, 2, ',', '.'); ?>
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
@@ -94,4 +97,5 @@ if (isset($_SESSION['carrinho']) && !empty($_SESSION['carrinho'])) {
     <?php endif; ?>
 </div>
 
+<?php echo $animais; ?>
 <?php require_once 'footer.php'; ?>

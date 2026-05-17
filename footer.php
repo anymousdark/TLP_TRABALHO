@@ -1,6 +1,6 @@
     <footer>
         <div class="container" style="background: none; border: none; box-shadow: none;">
-            <p>&copy; <?php echo date('Y'); ?> TechStore Enterprise. Todos os direitos reservados.</p>
+            <p>&copy; <?php echo date('Y'); ?> Lakastech. Todos os direitos reservados.</p>
         </div>
     </footer>
 
@@ -28,5 +28,6 @@
             updateIcon();
         });
     </script>
+<?php ob_end_flush(); ?>
 </body>
 </html>

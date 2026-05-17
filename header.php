@@ -1,10 +1,12 @@
 <?php require_once 'config.php'; ?>
+<?php require_once 'animais.php'; ?>
+<?php ob_start(); ?>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-ao">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore Enterprise</title>
+    <title>Lakastech</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -18,7 +20,7 @@
 
     <header class="navbar">
         <div class="navbar-content">
-            <a href="index.php" class="logo">TechStore<span>.</span></a>
+            <a href="index.php" class="logo">Lakastech<span>.</span></a>
             
             <div class="nav-links">
                 <a href="index.php">Catálogo</a>
@@ -31,13 +33,17 @@
                             <a href="#" style="color: var(--primary); font-weight: bold;">Admin <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></a>
                             <div class="dropdown-content">
                                 <a href="admin.php">Produtos</a>
-                                <a href="admin_usuarios.php">Usuários</a>
+                                <a href="admin_pedidos.php">Pedidos</a>
+                                <a href="admin_usuarios.php">Usuarios</a>
+                                <a href="admin_pagamento.php">Pagamentos</a>
                             </div>
                         </div>
                     <?php endif; ?>
                     
                     <div class="user-info">
-                        <span>Olá, <strong><?php echo $_SESSION['usuario_nome']; ?></strong></span>
+                        <a href="perfil.php" style="font-size: 0.85rem; color: var(--text-light);">
+                            <i class="fas fa-user-circle"></i> <?php echo $_SESSION['usuario_nome']; ?>
+                        </a>
                         <a href="logout.php" class="btn-sm">Sair</a>
                     </div>
                 <?php else: ?>

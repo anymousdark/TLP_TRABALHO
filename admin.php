@@ -1,31 +1,31 @@
 <?php 
 require_once 'header.php'; 
 
-// Proteção: Apenas admin pode acessar
+$animais = '<div class="animal-corner animal-corner-bl">' . animal_rinoceronte(75) . '</div>';
+$animais .= '<div class="animal-corner animal-corner-tr">' . animal_leao(65) . '</div>';
+
 if (!isset($_SESSION['usuario_tipo']) || $_SESSION['usuario_tipo'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
 
-// Ações CRUD
+// Acoes CRUD
 if (isset($_POST['salvar'])) {
     $id = intval($_POST['id']);
     $nome = $_POST['nome'];
     $descricao = $_POST['descricao'];
     $preco = $_POST['preco'];
     $estoque = $_POST['estoque'];
+    $categoria = $_POST['categoria'] ?? '';
     $imagem_atual = $_POST['imagem_atual'] ?? '';
     $imagem_nova = $imagem_atual;
 
-    // Upload de Imagem
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] === 0) {
         $extensao = pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION);
         $novo_nome = uniqid() . "." . $extensao;
         $destino = "uploads/" . $novo_nome;
-
         if (move_uploaded_file($_FILES['foto']['tmp_name'], $destino)) {
             $imagem_nova = $destino;
-            // Opcional: deletar imagem antiga se existir e não for URL externa
             if ($imagem_atual && file_exists($imagem_atual) && strpos($imagem_atual, 'http') === false) {
                 unlink($imagem_atual);
             }
@@ -33,18 +33,23 @@ if (isset($_POST['salvar'])) {
     }
 
     if ($id > 0) {
-        $stmt = $conn->prepare("UPDATE produtos SET nome=?, descricao=?, preco=?, estoque=?, imagem=? WHERE id=?");
-        if ($stmt === false) {
-            die("Erro ao preparar UPDATE: " . $conn->error);
-        }
-        $stmt->bind_param("ssdisi", $nome, $descricao, $preco, $estoque, $imagem_nova, $id);
+        $stmt = $conn->prepare("UPDATE produtos SET nome=?, descricao=?, preco=?, estoque=?, imagem=?, categoria=? WHERE id=?");
+        $stmt->bind_param("ssdissi", $nome, $descricao, $preco, $estoque, $imagem_nova, $categoria, $id);
     } else {
-        $stmt = $conn->prepare("INSERT INTO produtos (nome, descricao, preco, estoque, imagem) VALUES (?, ?, ?, ?, ?)");
-        if ($stmt === false) {
-            die("Erro ao preparar INSERT: " . $conn->error);
-        }
-        $stmt->bind_param("ssdis", $nome, $descricao, $preco, $estoque, $imagem_nova);
+        $stmt = $conn->prepare("INSERT INTO produtos (nome, descricao, preco, estoque, imagem, categoria) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssdiss", $nome, $descricao, $preco, $estoque, $imagem_nova, $categoria);
     }
+    $stmt->execute();
+    header("Location: admin.php");
+    exit();
+}
+
+// Atualizar estoque rapido via AJAX
+if (isset($_POST['quick_estoque'])) {
+    $id = intval($_POST['id']);
+    $qtd = intval($_POST['qtd']);
+    $stmt = $conn->prepare("UPDATE produtos SET estoque = ? WHERE id = ?");
+    $stmt->bind_param("ii", $qtd, $id);
     $stmt->execute();
     header("Location: admin.php");
     exit();
@@ -52,7 +57,6 @@ if (isset($_POST['salvar'])) {
 
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-    // Deletar imagem antes de remover do BD
     $stmt = $conn->prepare("SELECT imagem FROM produtos WHERE id = ?");
     if ($stmt !== false) {
         $stmt->bind_param("i", $id);
@@ -64,12 +68,12 @@ if (isset($_GET['delete'])) {
             }
         }
     }
-
+    $stmt = $conn->prepare("DELETE FROM itens_pedido WHERE produto_id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
     $stmt = $conn->prepare("DELETE FROM produtos WHERE id = ?");
-    if ($stmt !== false) {
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-    }
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
     header("Location: admin.php");
     exit();
 }
@@ -78,181 +82,312 @@ $edit_prod = null;
 if (isset($_GET['edit'])) {
     $id = intval($_GET['edit']);
     $stmt = $conn->prepare("SELECT * FROM produtos WHERE id = ?");
-    if ($stmt !== false) {
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $edit_prod = $stmt->get_result()->fetch_assoc();
-    }
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $edit_prod = $stmt->get_result()->fetch_assoc();
 }
 
-$produtos = $conn->query("SELECT * FROM produtos ORDER BY id DESC");
+// Filtro de busca
+$buscar = $_GET['buscar'] ?? '';
+$ordenar = $_GET['ordenar'] ?? 'id';
+$direcao = $_GET['direcao'] ?? 'DESC';
+
+$ordens_validas = ['id', 'nome', 'preco', 'estoque', 'categoria'];
+if (!in_array($ordenar, $ordens_validas)) $ordenar = 'id';
+$direcao = strtoupper($direcao) === 'ASC' ? 'ASC' : 'DESC';
+
+if ($buscar) {
+    $busca_like = "%$buscar%";
+    $stmt = $conn->prepare("SELECT * FROM produtos WHERE nome LIKE ? OR descricao LIKE ? ORDER BY $ordenar $direcao");
+    $stmt->bind_param("ss", $busca_like, $busca_like);
+    $stmt->execute();
+    $produtos = $stmt->get_result();
+} else {
+    $produtos = $conn->query("SELECT * FROM produtos ORDER BY $ordenar $direcao");
+}
+
+// Stats
+$total_prod = intval(($conn->query("SELECT COUNT(*) as c FROM produtos")->fetch_assoc())['c'] ?? 0);
+$estoque_total = intval(($conn->query("SELECT SUM(estoque) as e FROM produtos")->fetch_assoc())['e'] ?? 0);
+$valor_total = ($conn->query("SELECT SUM(preco * estoque) as v FROM produtos")->fetch_assoc())['v'] ?? 0;
+$pedidos_total = intval(($conn->query("SELECT COUNT(*) as p FROM pedidos")->fetch_assoc())['p'] ?? 0);
+$pendentes = intval(($conn->query("SELECT COUNT(*) as p FROM pedidos WHERE status='pendente'")->fetch_assoc())['p'] ?? 0);
+
+// Categorias existentes
+$cats = $conn->query("SELECT DISTINCT categoria FROM produtos WHERE categoria IS NOT NULL AND categoria != '' ORDER BY categoria");
+$categorias = [];
+while ($c = $cats->fetch_assoc()) $categorias[] = $c['categoria'];
 ?>
 
-<div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1>📊 Painel Administrativo</h1>
-        <div style="display: flex; gap: 0.5rem;">
-            <a href="admin_usuarios.php" class="btn" style="background: #64748b;">👥 Usuários</a>
-            <a href="index.php" class="btn" style="background: #22c55e;">🏪 Loja</a>
+<style>
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.admin-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .admin-layout { grid-template-columns: 1fr; }
+}
+.form-sidebar { position: sticky; top: 1rem; }
+.prod-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all 0.15s;
+    margin-bottom: 0.75rem;
+    align-items: center;
+}
+.prod-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.prod-card .thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--background);
+}
+.prod-card .info { flex: 1; min-width: 0; }
+.prod-card .info .nome { font-weight: 600; font-size: 0.95rem; display: block; }
+.prod-card .info .cat { font-size: 0.75rem; color: var(--text-light); display: block; margin-top: 0.1rem; }
+.prod-card .preco { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+.prod-card .estoque-wrap { display: flex; align-items: center; gap: 0.35rem; }
+.prod-card .estoque-wrap input {
+    width: 52px;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.8rem;
+    text-align: center;
+    border-radius: var(--radius-sm);
+}
+.prod-card .acoes { display: flex; gap: 0.35rem; }
+.toolbar {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.toolbar select, .toolbar input { padding: 0.45rem 0.7rem; font-size: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--card); color: var(--text); }
+.toolbar input { flex: 1; min-width: 140px; }
+.img-preview-wrap { position: relative; display: inline-block; }
+.img-preview-wrap img { border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.category-tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 999px;
+    background: rgba(0, 113, 227, 0.1);
+    color: var(--primary);
+    font-weight: 500;
+}
+.btn-icon {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1;
+}
+.btn-icon:hover { border-color: var(--primary); color: var(--primary); }
+.btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
+.empty-admin { text-align: center; padding: 3rem 1rem; color: var(--text-light); }
+.empty-admin i { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+</style>
+
+<div class="container" style="max-width: 1100px;">
+    <div class="flex-between" style="margin-bottom: 2rem;">
+        <div>
+            <h1 style="margin-bottom: 0.25rem;">Produtos</h1>
+            <p style="color: var(--text-light); font-size: 0.9rem;">Gira o catalogo da loja</p>
+        </div>
+        <div class="flex gap-sm">
+            <a href="admin_pedidos.php" class="btn btn-secondary">Pedidos <?php if ($pendentes > 0): ?><span class="badge badge-pendente" style="margin-left: 0.3rem;"><?php echo $pendentes; ?></span><?php endif; ?></a>
+            <a href="admin_usuarios.php" class="btn btn-secondary">Usuarios</a>
+            <a href="index.php" class="btn btn-success">Ver Loja</a>
         </div>
     </div>
 
-    <!-- Estatísticas -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-        <?php 
-        // Estatísticas - proteger contra falhas de query (evita fetch_assoc() em false)
-        $total_prod = 0;
-        $estoque_total = 0;
-        $valor_total = 0;
-        $pedidos_total = 0;
-
-        $q_total = $conn->query("SELECT COUNT(*) as c FROM produtos");
-        if ($q_total !== false) {
-            $row = $q_total->fetch_assoc();
-            $total_prod = intval($row['c'] ?? 0);
-        }
-
-        $q_estoque = $conn->query("SELECT SUM(estoque) as e FROM produtos");
-        if ($q_estoque !== false) {
-            $row = $q_estoque->fetch_assoc();
-            $estoque_total = intval($row['e'] ?? 0);
-        }
-
-        $q_valor = $conn->query("SELECT SUM(preco * estoque) as v FROM produtos");
-        if ($q_valor !== false) {
-            $row = $q_valor->fetch_assoc();
-            $valor_total = $row['v'] ?? 0;
-        }
-
-        $q_pedidos = $conn->query("SELECT COUNT(*) as p FROM pedidos");
-        if ($q_pedidos !== false) {
-            $row = $q_pedidos->fetch_assoc();
-            $pedidos_total = intval($row['p'] ?? 0);
-        }
-        ?>
-        <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 1.5rem; border-radius: 0.75rem; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold;"><?php echo $total_prod; ?></div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Produtos Cadastrados</div>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card glass" style="background: linear-gradient(135deg, #0071e3, #0060c9); color: white;">
+            <div class="stat-value"><?php echo $total_prod; ?></div>
+            <div class="stat-label">Produtos</div>
         </div>
-        <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 1.5rem; border-radius: 0.75rem; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold;"><?php echo $estoque_total; ?></div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Itens em Estoque</div>
+        <div class="stat-card glass" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">
+            <div class="stat-value"><?php echo $estoque_total; ?></div>
+            <div class="stat-label">Itens em Estoque</div>
         </div>
-        <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 1.5rem; border-radius: 0.75rem; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold;">R$ <?php echo number_format($valor_total, 0, ',', '.'); ?></div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Valor Total em Estoque</div>
+        <div class="stat-card glass" style="background: linear-gradient(135deg, #34c759, #28a745); color: white;">
+            <div class="stat-value">Kz <?php echo number_format($valor_total, 0, ',', '.'); ?></div>
+            <div class="stat-label">Valor em Estoque</div>
         </div>
-        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 1.5rem; border-radius: 0.75rem; text-align: center;">
-            <div style="font-size: 2rem; font-weight: bold;"><?php echo $pedidos_total; ?></div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Pedidos Totais</div>
+        <div class="stat-card glass" style="background: linear-gradient(135deg, #f5a623, #d97706); color: white;">
+            <div class="stat-value"><?php echo $pedidos_total; ?></div>
+            <div class="stat-label">Pedidos</div>
         </div>
     </div>
 
-    <!-- Formulário de Novo/Editar Produto -->
-    <div style="margin-bottom: 3rem; background: var(--card); padding: 2rem; border-radius: 1rem; box-shadow: var(--shadow); border: 1px solid var(--border);">
-        <h2 style="margin-bottom: 1.5rem;">📝 <?php echo $edit_prod ? '✏️ Editar Produto' : '➕ Novo Produto'; ?></h2>
-        <form method="post" enctype="multipart/form-data" style="display: grid; gap: 1rem;">
-            <input type="hidden" name="id" value="<?php echo $edit_prod['id'] ?? 0; ?>">
-            <input type="hidden" name="imagem_atual" value="<?php echo $edit_prod['imagem'] ?? ''; ?>">
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label>🏷️ Nome do Produto <span style="color: red;">*</span></label>
-                    <input type="text" name="nome" value="<?php echo htmlspecialchars($edit_prod['nome'] ?? ''); ?>" required>
-                </div>
-                <div class="form-group">
-                    <label>💰 Preço (R$) <span style="color: red;">*</span></label>
-                    <input type="number" step="0.01" name="preco" value="<?php echo $edit_prod['preco'] ?? ''; ?>" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>📄 Descrição</label>
-                <textarea name="descricao" rows="4" style="resize: vertical;"><?php echo htmlspecialchars($edit_prod['descricao'] ?? ''); ?></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>📦 Quantidade em Estoque <span style="color: red;">*</span></label>
-                <input type="number" name="estoque" value="<?php echo $edit_prod['estoque'] ?? ''; ?>" required min="0">
-            </div>
-            
-            <div class="form-group">
-                <label>🖼️ Foto do Produto</label>
-                <input type="file" name="foto" accept="image/*" <?php echo $edit_prod ? '' : 'required'; ?>>
-                <?php if ($edit_prod && $edit_prod['imagem']): ?>
-                    <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 1rem;">
-                        <img src="<?php echo $edit_prod['imagem']; ?>" width="80" height="80" style="object-fit: cover; border-radius: 0.5rem; border: 2px solid var(--border);">
-                        <div style="font-size: 0.85rem; color: var(--text-light);">📸 Imagem atual<br>Upload nova para substituir</div>
+    <div class="admin-layout">
+        <!-- Sidebar: Formulario -->
+        <div class="form-sidebar">
+            <div class="section-card" style="padding: 1.25rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem;">
+                    <?php echo $edit_prod ? '<i class="fas fa-pen"></i> Editar Produto' : '<i class="fas fa-plus-circle"></i> Novo Produto'; ?>
+                </h3>
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="id" value="<?php echo $edit_prod['id'] ?? 0; ?>">
+                    <input type="hidden" name="imagem_atual" value="<?php echo $edit_prod['imagem'] ?? ''; ?>">
+
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label style="font-size: 0.8rem; font-weight: 500;">Nome *</label>
+                        <input type="text" name="nome" value="<?php echo htmlspecialchars($edit_prod['nome'] ?? ''); ?>" required style="font-size: 0.85rem; padding: 0.45rem 0.6rem;">
                     </div>
-                <?php endif; ?>
-            </div>
-            
-            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button type="submit" name="salvar" class="btn btn-primary" style="flex: 1;">
-                    💾 <?php echo $edit_prod ? 'Atualizar' : 'Criar'; ?> Produto
-                </button>
-                <?php if ($edit_prod): ?>
-                    <a href="admin.php" class="btn" style="background: #6c757d; color: white; flex: 1; text-align: center;">❌ Cancelar</a>
-                <?php endif; ?>
-            </div>
-        </form>
-    </div>
 
-    <!-- Busca e Filtros -->
-    <div style="background: var(--card); padding: 1.5rem; border-radius: 1rem; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 2rem;">
-        <h3>🔍 Buscar Produtos</h3>
-        <form method="get" style="display: flex; gap: 1rem;">
-            <input type="text" name="buscar" placeholder="Nome do produto..." style="flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem;" value="<?php echo htmlspecialchars($_GET['buscar'] ?? ''); ?>">
-            <button type="submit" class="btn btn-primary">Buscar</button>
-            <?php if (isset($_GET['buscar'])): ?>
-                <a href="admin.php" class="btn" style="background: #6c757d; color: white;">Limpar</a>
-            <?php endif; ?>
-        </form>
-    </div>
-
-    <!-- Tabela de Produtos -->
-    <h2 style="margin-bottom: 1rem;">📋 Catálogo de Produtos (<?php echo $produtos->num_rows; ?> itens)</h2>
-    <div style="overflow-x: auto; background: var(--card); border-radius: 1rem; box-shadow: var(--shadow); border: 1px solid var(--border);">
-        <table style="width: 100%;">
-            <thead>
-                <tr>
-                    <th style="text-align: left;">🖼️ Foto</th>
-                    <th style="text-align: left;">📝 Nome</th>
-                    <th style="text-align: left;">📄 Descrição</th>
-                    <th style="text-align: right;">💰 Preço</th>
-                    <th style="text-align: center;">📦 Estoque</th>
-                    <th style="text-align: center;">⚙️ Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $produtos->fetch_assoc()): ?>
-                <tr style="border-top: 1px solid var(--border);">
-                    <td style="padding: 1rem; vertical-align: middle;">
-                        <img src="<?php echo htmlspecialchars($row['imagem']); ?>" width="60" height="60" style="object-fit: cover; border-radius: 0.5rem; border: 1px solid var(--border);">
-                    </td>
-                    <td style="padding: 1rem;"><strong><?php echo htmlspecialchars($row['nome']); ?></strong></td>
-                    <td style="padding: 1rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="<?php echo htmlspecialchars($row['descricao']); ?>"><?php echo htmlspecialchars(substr($row['descricao'], 0, 50)); ?>...</td>
-                    <td style="padding: 1rem; text-align: right;"><strong>R$ <?php echo number_format($row['preco'], 2, ',', '.'); ?></strong></td>
-                    <td style="padding: 1rem; text-align: center;">
-                        <span class="badge <?php echo $row['estoque'] > 0 ? 'badge-stock' : 'badge-out'; ?>">
-                            <?php echo $row['estoque']; ?> un
-                        </span>
-                    </td>
-                    <td style="padding: 1rem; text-align: center;">
-                        <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                            <a href="?edit=<?php echo $row['id']; ?>" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; white-space: nowrap;">✏️ Editar</a>
-                            <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; white-space: nowrap;" onclick="return confirm('⚠️ Tem certeza que deseja excluir este produto?')">🗑️ Excluir</a>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; font-weight: 500;">Preco (Kz) *</label>
+                            <input type="number" step="0.01" name="preco" value="<?php echo $edit_prod['preco'] ?? ''; ?>" required style="font-size: 0.85rem; padding: 0.45rem 0.6rem;">
                         </div>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-        <?php if ($produtos->num_rows == 0): ?>
-        <div style="text-align: center; padding: 2rem; color: var(--text-light);">
-            <p style="font-size: 1.1rem;">📭 Nenhum produto encontrado</p>
+                        <div class="form-group">
+                            <label style="font-size: 0.8rem; font-weight: 500;">Estoque *</label>
+                            <input type="number" name="estoque" value="<?php echo $edit_prod['estoque'] ?? ''; ?>" required min="0" style="font-size: 0.85rem; padding: 0.45rem 0.6rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label style="font-size: 0.8rem; font-weight: 500;">Categoria</label>
+                        <input type="text" name="categoria" list="cat-list" value="<?php echo htmlspecialchars($edit_prod['categoria'] ?? ''); ?>" placeholder="Ex: Eletronicos" style="font-size: 0.85rem; padding: 0.45rem 0.6rem;">
+                        <datalist id="cat-list">
+                            <?php foreach ($categorias as $c): ?>
+                            <option value="<?php echo htmlspecialchars($c); ?>">
+                            <?php endforeach; ?>
+                        </datalist>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label style="font-size: 0.8rem; font-weight: 500;">Descricao</label>
+                        <textarea name="descricao" rows="3" style="font-size: 0.85rem; padding: 0.45rem 0.6rem; resize: vertical;"><?php echo htmlspecialchars($edit_prod['descricao'] ?? ''); ?></textarea>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label style="font-size: 0.8rem; font-weight: 500;">Foto</label>
+                        <input type="file" name="foto" accept="image/*" style="font-size: 0.85rem; padding: 0.35rem 0;" <?php echo $edit_prod ? '' : 'required'; ?> onchange="previewAdminImg(event)">
+                        <?php if ($edit_prod && $edit_prod['imagem']): ?>
+                            <div class="img-preview-wrap" style="margin-top: 0.5rem;">
+                                <img src="<?php echo $edit_prod['imagem']; ?>" width="72" height="72" id="admin-img-preview">
+                                <span style="font-size: 0.75rem; color: var(--text-light); display: block; margin-top: 0.2rem;">Atual (upload nova para substituir)</span>
+                            </div>
+                        <?php else: ?>
+                            <div class="img-preview-wrap" style="margin-top: 0.5rem; display: none;" id="admin-img-preview-wrap">
+                                <img width="72" height="72" id="admin-img-preview" style="object-fit: cover;">
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="flex gap-sm">
+                        <button type="submit" name="salvar" class="btn btn-primary" style="flex: 1; font-size: 0.85rem; padding: 0.5rem;">
+                            <?php echo $edit_prod ? '<i class="fas fa-save"></i> Salvar' : '<i class="fas fa-plus"></i> Criar'; ?>
+                        </button>
+                        <?php if ($edit_prod): ?>
+                            <a href="admin.php" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 0.8rem;">Cancelar</a>
+                        <?php endif; ?>
+                    </div>
+                </form>
+            </div>
         </div>
-        <?php endif; ?>
+
+        <!-- Lista de Produtos -->
+        <div>
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <form method="get" class="input-group" style="flex: 1; gap: 0.5rem; flex-wrap: wrap;">
+                    <input type="text" name="buscar" placeholder="Buscar produto..." value="<?php echo htmlspecialchars($buscar); ?>">
+                    <button type="submit" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.45rem 0.8rem;"><i class="fas fa-search"></i></button>
+                    <?php if ($buscar): ?>
+                        <a href="admin.php" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.45rem 0.8rem;">Limpar</a>
+                    <?php endif; ?>
+                </form>
+                <select onchange="window.location='?ordenar='+this.value+'&direcao=<?php echo $direcao; ?>'">
+                    <option value="id" <?php echo $ordenar === 'id' ? 'selected' : ''; ?>>Mais recentes</option>
+                    <option value="nome" <?php echo $ordenar === 'nome' ? 'selected' : ''; ?>>Nome</option>
+                    <option value="preco" <?php echo $ordenar === 'preco' ? 'selected' : ''; ?>>Preco</option>
+                    <option value="estoque" <?php echo $ordenar === 'estoque' ? 'selected' : ''; ?>>Estoque</option>
+                </select>
+                <button class="btn-icon" onclick="var d='<?php echo $direcao; ?>';window.location='?ordenar=<?php echo $ordenar; ?>&direcao='+(d==='ASC'?'DESC':'ASC')" title="Inverter ordem">
+                    <i class="fas fa-arrow-<?php echo $direcao === 'ASC' ? 'up' : 'down'; ?>"></i>
+                </button>
+            </div>
+
+            <!-- Produtos -->
+            <?php if ($produtos->num_rows == 0): ?>
+                <div class="empty-admin">
+                    <i class="fas fa-box-open"></i>
+                    <p><?php echo $buscar ? 'Nenhum produto encontrado para "' . htmlspecialchars($buscar) . '".' : 'Nenhum produto cadastrado ainda.'; ?></p>
+                    <?php if ($buscar): ?>
+                        <a href="admin.php" class="btn btn-secondary" style="margin-top: 0.75rem;">Limpar busca</a>
+                    <?php endif; ?>
+                </div>
+            <?php else: ?>
+                <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.75rem;">
+                    <?php echo $produtos->num_rows; ?> produto(s) encontrado(s)
+                </div>
+                <?php while ($row = $produtos->fetch_assoc()): ?>
+                <div class="prod-card">
+                    <img src="<?php echo htmlspecialchars($row['imagem']); ?>" class="thumb" onerror="this.src='https://placehold.co/56x56/e0e0e0/999?text=?'">
+                    <div class="info">
+                        <span class="nome"><?php echo htmlspecialchars($row['nome']); ?></span>
+                        <?php if (!empty($row['categoria'])): ?>
+                            <span class="cat"><span class="category-tag"><?php echo htmlspecialchars($row['categoria']); ?></span></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="preco">Kz <?php echo number_format($row['preco'], 2, ',', '.'); ?></div>
+                    <div class="estoque-wrap">
+                        <form method="post" style="display: flex; gap: 0.2rem; align-items: center;">
+                            <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                            <input type="number" name="qtd" value="<?php echo $row['estoque']; ?>" min="0" title="Estoque">
+                            <button type="submit" name="quick_estoque" class="btn-icon" title="Atualizar estoque"><i class="fas fa-check"></i></button>
+                        </form>
+                    </div>
+                    <div class="acoes">
+                        <a href="?edit=<?php echo $row['id']; ?>" class="btn-icon" title="Editar"><i class="fas fa-pen"></i></a>
+                        <a href="?delete=<?php echo $row['id']; ?>" class="btn-icon danger" title="Excluir" onclick="return confirm('Excluir <?php echo htmlspecialchars($row['nome']); ?>?')"><i class="fas fa-trash"></i></a>
+                    </div>
+                </div>
+                <?php endwhile; ?>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
+<script>
+function previewAdminImg(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        var preview = document.getElementById('admin-img-preview');
+        var wrap = document.getElementById('admin-img-preview-wrap');
+        if (preview) {
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+        }
+        if (wrap) wrap.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
+<?php echo $animais; ?>
 <?php require_once 'footer.php'; ?>

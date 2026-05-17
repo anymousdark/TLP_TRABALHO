@@ -30,13 +30,13 @@ foreach ($queries as $query) {
     }
 }
 
-echo "<div style='text-align: center; padding: 2rem; font-size: 1.1rem;'>";
-echo "<h2>✅ Banco de dados criado com sucesso!</h2>";
-echo "<p>Queries executadas: $sucesso</p>";
+echo "<div class='container' style='text-align: center;'>
+        <h2>Banco de dados criado com sucesso!</h2>
+        <p>Queries executadas: $sucesso</p>";
 if ($erro_count > 0) {
-    echo "<p style='color: red;'>Erros encontrados: $erro_count (ignoráveis se for 'já existe')</p>";
+    echo "<div class='alert alert-danger'>Erros encontrados: $erro_count (ignoraveis se for 'ja existe')</div>";
 }
-echo "<p style='margin-top: 1rem;'><a href='index.php' style='color: #2563eb; text-decoration: none; font-weight: bold;'>👉 Ir para a Loja</a></p>";
-echo "<p style='color: #666; margin-top: 1rem;'>Agora pode deletar este arquivo: <strong>setup_db.php</strong></p>";
-echo "</div>";
+echo "<p style='margin-top: 1.5rem;'><a href='index.php' class='btn btn-primary'>Ir para a Loja</a></p>
+        <p class='text-muted' style='margin-top: 1rem;'>Agora pode deletar este arquivo: <strong>setup_db.php</strong></p>
+      </div>";
 ?>

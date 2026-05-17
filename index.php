@@ -1,6 +1,10 @@
 <?php 
 require_once 'header.php'; 
 
+// Animais decorativos
+$animal_fundo = '<div class="animal-corner animal-corner-bl">' . animal_elefante(70) . '</div>';
+$animal_fundo .= '<div class="animal-corner animal-corner-tr">' . animal_macaco(60) . '</div>';
+
 // Adicionar ao carrinho
 if (isset($_GET['add'])) {
     $id = intval($_GET['add']);
@@ -38,8 +42,11 @@ $result = $conn->query("SELECT * FROM produtos ORDER BY id DESC");
         <img src="<?php echo $row['imagem'] ?: 'https://via.placeholder.com/400x300'; ?>" alt="<?php echo $row['nome']; ?>" class="product-image">
         <div class="product-info">
             <h3 class="product-name"><?php echo $row['nome']; ?></h3>
+            <?php if (!empty($row['categoria'])): ?>
+                <span class="category-tag" style="margin-bottom: 0.4rem; display: inline-block;"><?php echo htmlspecialchars($row['categoria']); ?></span>
+            <?php endif; ?>
             <p class="product-desc"><?php echo $row['descricao']; ?></p>
-            <div class="product-price">R$ <?php echo number_format($row['preco'], 2, ',', '.'); ?></div>
+            <div class="product-price">Kz <?php echo number_format($row['preco'], 2, ',', '.'); ?></div>
             
             <div style="margin-bottom: 1rem;">
                 <?php if (isset($row['estoque']) && $row['estoque'] > 0): ?>
@@ -59,4 +66,5 @@ $result = $conn->query("SELECT * FROM produtos ORDER BY id DESC");
     <?php endwhile; ?>
 </div>
 
+<?php echo $animal_fundo; ?>
 <?php require_once 'footer.php'; ?>

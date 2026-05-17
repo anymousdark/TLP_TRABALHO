@@ -4,7 +4,7 @@ require_once 'config.php';
 echo "<h1>Atualizando Senhas...</h1>";
 
 $usuarios = [
-    ['email' => 'admin@techstore.com', 'senha' => 'admin123'],
+    ['email' => 'admin@lakastech.com', 'senha' => 'admin123'],
     ['email' => 'cliente@gmail.com', 'senha' => '123456']
 ];
 
